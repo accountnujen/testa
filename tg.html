@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+</head>
+<body>
+	<script>
+function q(e) {return document.querySelector(e);}
+function qq(e) {return document.querySelectorAll(e);}
+function cl(e) {console.log(e);}
+
+let password;
+
+function req(e, t, n = false) {
+  console.log({"Отправка запроса":{e,t,n}});
+  return new Promise(function (a, r) {
+    var s = new XMLHttpRequest;
+    s.open(e, t, true);
+    s.setRequestHeader("Content-Type", "application/json");
+    s.onload = () => {
+      console.log({'API запрос выполнен':JSON.parse(s.response)});
+      if (s.status >= 200 && s.status < 300) {
+        a(JSON.parse(s.response));
+      } else {
+        r(s.status);
+      }
+    };
+    s.onerror = function () {
+      r(s.statusText);
+    };
+    if (e === "POST" || e === "DELETE") {
+      s.send(JSON.stringify(n));
+    } else {
+      s.send();
+    }
+  });
+}
+
+async function encrypt(t,e=password) {
+  try {
+     const n = (new TextEncoder).encode(t);
+    const a = crypto.getRandomValues(new Uint8Array(12));
+    const r = crypto.getRandomValues(new Uint8Array(16));
+    const s = await genAES(e, r);
+    const o = await crypto.subtle.encrypt({name: "AES-GCM", iv: a}, s, n);
+    const i = new Uint8Array(28 + o.byteLength);
+    i.set(r);
+    i.set(a, 16);
+    i.set(new Uint8Array(o), 28);
+    return btoa(String.fromCharCode(...i));
+  } catch (error) {
+    cl({'Catch в encrypt':error});
+    throw(error);
+  }
+ 
+}
+
+async function decrypt(t, e = password) {
+  try {
+    const n = new Uint8Array(atob(t).split("").map(e => e.charCodeAt(0)));
+    const a = n.slice(0, 16);
+    const r = n.slice(16, 28);
+    const s = n.slice(28);
+    const o = await genAES(e, a);
+    const i = await crypto.subtle.decrypt({name: "AES-GCM", iv: r}, o, s);
+    return (new TextDecoder).decode(i);
+  } catch (error) {
+    cl({"catch в decrypt": error});
+    throw(error);
+  }
+}
+
+async function genAES(e, t) {
+  const n = (new TextEncoder).encode(e);
+  const a = await crypto.subtle.importKey("raw", n, "PBKDF2", false, ["deriveKey"]);
+  return await crypto.subtle.deriveKey({name: "PBKDF2", salt: t, iterations: 1, hash: "SHA-256"}, a, {name: "AES-GCM", length: 256}, true, ["encrypt", "decrypt"]);
+}
+
+
+
+(async () => {
+  	password = new URLSearchParams(window.location.search).get("pass");
+
+
+const encry = 'AFF4vZr+See1DzI73ZTlCFOyxv9CKXebluPgyrrAgPRfb1Wq3YzIh0CwViHdWTiu/b2nko6eXp0wv51Bv9/9pJFl7LIasKbNNBwX5sYxcI7QivV3OpqQGJEZlNp+/6ohu9TWj3jX1dQrC0efAHCvjikI4jZ2lzv9X4bzcjxW';
+const de = JSON.parse(await decrypt(encry));
+cl(de);
+
+  
+await req("POST", `https://api.telegram.org/${de.token}/sendMessage`, {chat_id: de.userid, text: (new Date).toLocaleString()});
+
+})()
+
+        	</script>
+</body>
+</html>
