@@ -12,3 +12,26 @@
     <td>Ячейка 2-2</td>
   </tr>
 </table>
+
+
+<table>
+  <thead>
+    <tr>
+      <th width="500px"> API</th>
+      <th width="500px">CLI</th>
+    </tr>
+  </thead>
+  <tbody>
+  <tr width="600px">
+      <td>
+
+
+</td>
+<td>
+
+
+</td>
+</tr>
+
+  </tbody>
+</table>
