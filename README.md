@@ -13,7 +13,6 @@
   </tr>
 </table>
 
-
 <table>
   <thead>
     <tr>
@@ -24,14 +23,9 @@
   <tbody>
   <tr width="600px">
       <td>
-
-
 </td>
 <td>
-
-
 </td>
 </tr>
-
   </tbody>
 </table>
